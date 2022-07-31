@@ -6,8 +6,8 @@
  **************************************************/
 
 /*
-  Version 6.1
-  Written by Frank Wille in 2013, 2016, 2017, 2018, 2019, 2020, 2021.
+  Version 6.2
+  Written by Frank Wille in 2013, 2016, 2017, 2018, 2019, 2020, 2021, 2022.
 */
 
 #ifndef EXEC_TYPES_H
@@ -62,7 +62,7 @@ void ASM mt_end(REG(a6, void *custom));
              d0=SampleLength.w, d1=SamplePeriod.w, d2=SampleVolume.w)
     Request playing of an external sound effect on the most unused channel.
     This function is for compatibility with the old API only!
-    You should call _mt_playfx instead.
+    You should call mt_playfx() instead.
 */
 
 void ASM mt_soundfx(REG(a6, void *custom),
@@ -142,7 +142,7 @@ void ASM mt_stopfx(REG(a6, void *custom),
   mt_musicmask(a6=CUSTOM, d0=ChannelMask.b)
     Set bits in the mask define which specific channels are reserved
     for music only. Set bit 0 for channel 0, ..., bit 3 for channel 3.
-    When calling _mt_soundfx or _mt_playfx with automatic channel selection
+    When calling mt_soundfx() or mt_playfx() with automatic channel selection
     (sfx_cha=-1) then these masked channels will never be picked.
     The mask defaults to 0.
 */
@@ -164,15 +164,28 @@ void ASM mt_mastervol(REG(a6, void *custom),
   mt_samplevol(d0=SampleNumber.w, d1=Volume.b)
     Redefine a sample's volume. May also be done while the song is playing.
     Warning: Does not check arguments for valid range! You must have done
-    _mt_init before calling this function!
+    mt_init() before calling this function!
     The new volume is persistent. Even when the song is restarted.
 */
 
 void ASM mt_samplevol(REG(d0, UWORD SampleNumber), REG(d1, UBYTE Volume));
 
 /*
+  mt_channelmask(a6=CUSTOM, d0=ChannelMask.b)
+    Bits cleared in the mask define which specific channels are muted
+    for music replay. Clear bit 0 for channel 0, ..., bit 3 for channel 3.
+    The mask defaults to all channels unmuted (bits set) and is reset to
+    this state on mt_init() and mt_end().
+*/
+
+void ASM mt_channelmask(REG(a6, void *custom),
+	REG(d0, UBYTE ChannelMask));
+
+/*
   mt_music(a6=CUSTOM)
-    The replayer routine. Is called automatically after mt_install_cia().
+    The replayer routine. Can be called from your own VBlank interrupt
+    handler when VBLANK_MUSIC is set. Is otherwise called automatically
+    by Timer-A interrupts after mt_install_cia().
 */
 
 void ASM mt_music(REG(a6, void *custom));
